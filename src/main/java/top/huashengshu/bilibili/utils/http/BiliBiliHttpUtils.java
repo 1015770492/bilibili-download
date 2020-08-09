@@ -2,7 +2,6 @@ package top.huashengshu.bilibili.utils.http;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
@@ -90,21 +89,23 @@ public class BiliBiliHttpUtils {
 
         //3.发送请求获取数据
         CompletableFuture<HttpResponse<InputStream>> context = client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream());//传入InputStream泛型，这样通过body可以获取输入流
-        try (InputStream is = context.get().body();) {//java9新特性自动关闭流
+        HttpResponse<InputStream> response=null;
+        try {
+            response = context.get();
+//            System.out.println("下载文件的头信息："+response.headers().toString());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        try (InputStream is = response.body();) {//java9新特性自动关闭流
             boolean flag = createDir(savePath);
             if (flag) {
                 try (FileOutputStream fos = new FileOutputStream(savePath);) {
                     is.transferTo(fos);//写入输出流
                 }
             }
-
         } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            return false;
-        } catch (ExecutionException e) {
             e.printStackTrace();
             return false;
         }

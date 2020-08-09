@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class BiliBiliUtils {
 
     private static ExecutorService executorService = Executors.newFixedThreadPool(50);
-    private static ExecutorService executorService2 = Executors.newCachedThreadPool();
 
 
     /**
@@ -22,10 +21,10 @@ public class BiliBiliUtils {
      * @param args
      */
     public static void main(String[] args) {
-//        String referUrl = "https://www.bilibili.com/video/BV1zA411e7xU?from=search&seid=17687941819203298026";
 //        String url = "http://upos-sz-mirrorks3.bilivideo.com/upgcxcode/71/89/193638971/193638971-1-30280.m4s?e=ig8euxZM2rNcNbdlhoNvNC8BqJIzNbfqXBvEqxTEto8BTrNvN0GvT90W5JZMkX_YN0MvXg8gNEV4NC8xNEV4N03eN0B5tZlqNxTEto8BTrNvNeZVuJ10Kj_g2UB02J0mN0B5tZlqNCNEto8BTrNvNC7MTX502C8f2jmMQJ6mqF2fka1mqx6gqj0eN0B599M=&uipk=5&nbs=1&deadline=1596809841&gen=playurl&os=ks3bv&oi=1993628866&trid=cfdbfe592fde4237a2706941d6b6b61du&platform=pc&upsig=1d36fac3406db4ba7e7069d5a74eb2f3&uparams=e,uipk,nbs,deadline,gen,os,oi,trid,platform&mid=396030917&orderid=0,3&agrr=0&logo=80000000";
 //        String bvidUrl = "https://api.bilibili.com/x/player/pagelist?bvid=BV1m4411H7pi&jsonp=jsonp";
-        String referUrl = "https://www.bilibili.com/video/BV16K411J754?from=search&seid=7571931833026679506";//测试用的url
+//        String referUrl = "https://www.bilibili.com/video/BV16K411J754?from=search&seid=7571931833026679506";//测试用的url
+        String referUrl = "https://www.bilibili.com/video/BV1rT4y137Lu?from=search&seid=2039503208193595218";//测试用的url
 
         BiliBiliUtils.patchDownload(referUrl, "D:/");//将referUrl系列的所有视频存到D:/盘
 
@@ -79,21 +78,33 @@ public class BiliBiliUtils {
             String videoSavePath = new StringBuilder(finalDriveName).append(directName).append("/").append(videoName).append(".video").toString();
             String audioSavePath = new StringBuilder(finalDriveName).append(directName).append("/").append(videoName).append(".audio").toString();
 
-            Future<Boolean> vflag = executorService.submit(() -> {
+
+            CompletableFuture<Boolean> vflag = CompletableFuture.supplyAsync(() -> {
                 return BiliBiliHttpUtils.downloadFile(referUrl, videoUrl, videoSavePath);//下载图像文件
-            });
-            Future<Boolean> aflag = executorService.submit(() -> {
+            },executorService);
+            CompletableFuture<Boolean> aflag = CompletableFuture.supplyAsync(() -> {
                 return BiliBiliHttpUtils.downloadFile(referUrl, audioUrl, audioSavePath);//下载音频文件
+            },executorService);
+            vflag.thenAcceptBoth(aflag,(video,audio)->{
+                if (video && audio){
+                    System.out.println(new StringBuilder("开始合并：\n").append(videoSavePath).append("\n").append(audioSavePath));
+                    executorService.execute(() -> {
+                        try {
+                            MergeVideoAndAudioUtils
+                                    .merge(
+                                            videoSavePath,
+                                            audioSavePath,
+                                            new StringBuilder(finalDriveName).append(directName).append("/").append(videoName).append(".mp4").toString());
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                }
             });
-            executorService.execute(() -> {
-                MergeVideoAndAudioUtils
-                        .merge(
-                                vflag,
-                                aflag,
-                                videoSavePath,
-                                audioSavePath,
-                                new StringBuilder(finalDriveName).append(directName).append("/").append(videoName).append(".mp4").toString());
-            });
+
+
 
         });
 
