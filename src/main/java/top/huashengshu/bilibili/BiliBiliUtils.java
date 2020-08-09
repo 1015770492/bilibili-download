@@ -8,11 +8,10 @@ import top.huashengshu.bilibili.utils.merge.MergeVideoAndAudioUtils;
 
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BiliBiliUtils {
 
-    private static ExecutorService executorService = Executors.newFixedThreadPool(50);
+    private static ExecutorService executorService = Executors.newFixedThreadPool(5);//创建5个线程，太大了容易被封ip
 
 
     /**
@@ -23,8 +22,9 @@ public class BiliBiliUtils {
     public static void main(String[] args) {
 //        String url = "http://upos-sz-mirrorks3.bilivideo.com/upgcxcode/71/89/193638971/193638971-1-30280.m4s?e=ig8euxZM2rNcNbdlhoNvNC8BqJIzNbfqXBvEqxTEto8BTrNvN0GvT90W5JZMkX_YN0MvXg8gNEV4NC8xNEV4N03eN0B5tZlqNxTEto8BTrNvNeZVuJ10Kj_g2UB02J0mN0B5tZlqNCNEto8BTrNvNC7MTX502C8f2jmMQJ6mqF2fka1mqx6gqj0eN0B599M=&uipk=5&nbs=1&deadline=1596809841&gen=playurl&os=ks3bv&oi=1993628866&trid=cfdbfe592fde4237a2706941d6b6b61du&platform=pc&upsig=1d36fac3406db4ba7e7069d5a74eb2f3&uparams=e,uipk,nbs,deadline,gen,os,oi,trid,platform&mid=396030917&orderid=0,3&agrr=0&logo=80000000";
 //        String bvidUrl = "https://api.bilibili.com/x/player/pagelist?bvid=BV1m4411H7pi&jsonp=jsonp";
-//        String referUrl = "https://www.bilibili.com/video/BV16K411J754?from=search&seid=7571931833026679506";//测试用的url
-        String referUrl = "https://www.bilibili.com/video/BV1rT4y137Lu?from=search&seid=2039503208193595218";//测试用的url
+        String referUrl = "https://www.bilibili.com/video/BV1oi4y1u7Bq?spm_id_from=333.851.b_7265706f7274466972737431.7";//测试用的url
+//        String referUrl = "https://www.bilibili.com/video/BV1BE411S7Ae?from=search&seid=14532890495284483012";//2019年旧版本谷粒商城292集
+//        String referUrl = "https://www.bilibili.com/video/BV1np4y1C7Yf?from=search&seid=14532890495284483012";//谷粒商城101集
 
         BiliBiliUtils.patchDownload(referUrl, "D:/");//将referUrl系列的所有视频存到D:/盘
 

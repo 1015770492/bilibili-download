@@ -6,4 +6,5 @@ module bilibili {
     requires org.jsoup;
     requires spring.webflux;
     requires reactor.core;
+    requires spring.core;
 }

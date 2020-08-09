@@ -2,63 +2,24 @@ package top.huashengshu.bilibili.utils.http;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 public class BiliBiliHttpUtils {
 
-
-    /**
-     * 构建公共请求头
-     *
-     * @param url
-     * @return
-     */
-    public static HttpRequest.Builder getRequestForHTML(String url) {
-        HttpRequest.Builder accept = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .timeout(Duration.ofMinutes(2))
-                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 SE 2.X MetaSr 1.0")
-                .header("Accept", "*/*")
-                .header("Accept-Encoding", "gzip, deflate, br");
-        return accept;
-    }
-
-    /**
-     * 构建公共请求头
-     *
-     * @param url
-     * @return
-     */
-    public static HttpRequest.Builder getRequestForJSON(String url) {
-        HttpRequest.Builder accept = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .timeout(Duration.ofMinutes(2))
-                .header("Content-Type", "application/json")//设置请求头
-                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 SE 2.X MetaSr 1.0")
-                .header("Accept", "*/*")
-                .header("Accept-Encoding", "gzip, deflate, br");
-        return accept;
-    }
-
-
-    public static boolean createDir(String destDirName) {
+    public static boolean createDirect(String destDirName) {
         File file = new File(destDirName);
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
@@ -76,33 +37,18 @@ public class BiliBiliHttpUtils {
      * @return 下载成功则返回true，中间报异常退出则返回false
      */
     public static boolean downloadFile(String refererUrl, String url, String savePath) {
-        HttpClient client = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)//支持 Http2.0， http1.1直接Version.HTTP_1_1
-                .followRedirects(HttpClient.Redirect.NORMAL)//自动重定向
-                .connectTimeout(Duration.ofSeconds(20))//连接超时设置
-                .build();//创建一个客户端
-        //2.构建请求体
-        HttpRequest request = getRequestForJSON(url)
-                .header("referer", refererUrl)//来自那个视频例如：https://www.bilibili.com/video/BV1m4411H7pi
-                .GET()
-                .build();
-
-        //3.发送请求获取数据
-        CompletableFuture<HttpResponse<InputStream>> context = client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream());//传入InputStream泛型，这样通过body可以获取输入流
-        HttpResponse<InputStream> response=null;
-        try {
-            response = context.get();
-//            System.out.println("下载文件的头信息："+response.headers().toString());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        try (InputStream is = response.body();) {//java9新特性自动关闭流
-            boolean flag = createDir(savePath);
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("referer",refererUrl);//设置请求头
+        HttpEntity<String> entity = new HttpEntity<String>("", headers);
+        ResponseEntity<Resource> in = restTemplate.exchange(url, HttpMethod.GET, entity, Resource.class);
+        try (InputStream is = in.getBody().getInputStream()) {//java9新特性自动关闭流
+            boolean flag = createDirect(savePath);
             if (flag) {
                 try (FileOutputStream fos = new FileOutputStream(savePath);) {
                     is.transferTo(fos);//写入输出流
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         } catch (IOException e) {
@@ -162,26 +108,30 @@ public class BiliBiliHttpUtils {
 
 
         JSONArray pages = cidJSONObject.getJSONArray("pages");//包含这一系列视频的cid内容
-        Stream<JSONObject> jsonObjectStream =
-                pages.parallelStream()
-                        .map(o -> {
-                            JSONObject obj = (JSONObject) o;
-                            String cid = obj.getString("cid");//获取cid
-                            String part = obj.getString("part");//获取视频名  前缀
+        try (Stream<JSONObject> jsonObjectStream = pages.parallelStream()
+                .map(o -> {
+                    JSONObject obj = (JSONObject) o;
+                    String cid = obj.getString("cid");//获取cid
+                    String part = obj.getString("part");//获取视频名  前缀
 
-                            String requestUrl = new StringBuilder("https://api.bilibili.com/x/player/playurl?cid=").append(cid)
-                                    .append("&bvid=").append(bvid).append("&qn=64&fnver=0&fnval=16&fourk=1").toString();
-                            String jsonString = new RestTemplate().getForEntity(requestUrl, String.class).getBody();
+                    //获取播放地址的api
+                    String requestUrl = new StringBuilder("https://api.bilibili.com/x/player/playurl?cid=").append(cid)
+                            .append("&bvid=").append(bvid).append("&qn=80&fnver=0&fnval=16&fourk=1").toString();
 
-                            JSONObject parse = JSONObject.parseObject(jsonString).getJSONObject("data");
-                            parse.put("cid", cid);//将cid添加到返回的数据中
-                            parse.put("directName", title);//将cid添加到返回的数据中
-                            parse.put("videoName", part);//将视频标题名添加到json中
-                            return parse;
-                        });
+                    String jsonString = new RestTemplate().getForEntity(requestUrl, String.class).getBody();
+                    JSONObject data = JSONObject.parseObject(jsonString).getJSONObject("data");//获取api返回的jaon中的data对象
+                    /**
+                     * 添加自定义的属性，方便保存
+                     */
+                    data.put("cid", cid);//将cid添加到返回的数据中
+                    data.put("directName", title);//添加视频的标题作为文件夹
+                    data.put("videoName", part);//添加视频的名称
+                    return data;//将添加了自定义属性的json返回，作为新的流
+                })) {
 //        System.out.println(cidJSONObject);
 
-        return jsonObjectStream.collect(Collectors.toList());//将收集到的url封装起来
+            return jsonObjectStream.collect(Collectors.toList());//将收集到的url封装起来
+        }
     }
 
 }
