@@ -120,6 +120,7 @@ public class BiliBiliHttpUtils {
                     //获取播放地址的api
                     String requestUrl = new StringBuilder("https://api.bilibili.com/x/player/playurl?cid=").append(cid)
                             .append("&bvid=").append(bvid).append("&qn=80&fnver=0&fnval=16&fourk=1").toString();
+                    System.out.println(requestUrl);
 
                     String jsonString = new RestTemplate().getForEntity(requestUrl, String.class).getBody();
                     JSONObject data = JSONObject.parseObject(jsonString).getJSONObject("data");//获取api返回的jaon中的data对象

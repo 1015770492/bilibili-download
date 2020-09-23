@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.concurrent.*;
 
 public class MergeVideoAndAudioUtils {
-    static ExecutorService executorService = Executors.newFixedThreadPool(20);
+    static ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     public static boolean merge(String videoPath, String audioPath, String savePath) throws ExecutionException, InterruptedException {
 
@@ -35,14 +35,14 @@ public class MergeVideoAndAudioUtils {
         }, executorService);
 
         Process process = processFuture.get();//获取上一个的process对象
-        CompletableFuture<Boolean> mergeScuess = CompletableFuture.supplyAsync(() -> {
+        CompletableFuture<Boolean> mergeSuccess = CompletableFuture.supplyAsync(() -> {
             while (process.isAlive()) {
             }//判断合并命令是否执行完成，如果完成则会跳出循环
             clearGarbageFile(videoPath);//清理垃圾文件
             clearGarbageFile(audioPath);//清理垃圾文件
             return true;
         }, executorService);
-        return mergeScuess.get();//将合并结果返回
+        return mergeSuccess.get();//将合并结果返回
     }
 
     public static boolean clearGarbageFile(String filePath) {
