@@ -19,6 +19,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 public class BiliBiliHttpUtils {
 
+    /**
+     * 创建目录：如果不存在则创建然后返回true，如果存在直接返回true
+     * @param destDirName  目录名全路径 盘符驱动+路径
+     * @return
+     */
     public static boolean createDirect(String destDirName) {
         File file = new File(destDirName);
         if (!file.getParentFile().exists()) {
@@ -34,7 +39,7 @@ public class BiliBiliHttpUtils {
      * @param refererUrl 视频的参考路径，
      * @param url        真正下载的url链接，可以是m4s文件和audio文件，下载后需要合并
      * @param savePath   保存的路径
-     * @return 下载成功则返回true，中间报异常退出则返回false
+     * @return 下载成功则返回true，中间报异常则进行自旋下载文件
      */
     public static boolean downloadFile(String refererUrl, String url, String savePath) {
         RestTemplate restTemplate = new RestTemplate();
@@ -52,8 +57,7 @@ public class BiliBiliHttpUtils {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            return false;
+            downloadFile(refererUrl,url,savePath);//异常则进行重新下载
         }
         return true;
     }
@@ -105,9 +109,8 @@ public class BiliBiliHttpUtils {
         String bvid = cidJSONObject.getString("bvid");//视频的id
         String title = cidJSONObject.getString("title");//标题--》用来做文件夹
         String picUrl = cidJSONObject.getString("pic");//封面
-
-
         JSONArray pages = cidJSONObject.getJSONArray("pages");//包含这一系列视频的cid内容
+
         try (Stream<JSONObject> jsonObjectStream = pages.parallelStream()
                 .map(o -> {
                     JSONObject obj = (JSONObject) o;
