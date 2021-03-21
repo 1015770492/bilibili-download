@@ -10,7 +10,7 @@ http://api.bilibili.com/x/web-interface/view?bvid=%s
 
 #### bvid就是图中标记的地方
 
-![image-20200806002406504](C:\Users\10157\Desktop\image-20200806002406504.png)
+![BVID的获取方式，复制带BV开头的url即可](https://img-blog.csdnimg.cn/20210322024950455.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQxODEzMjA4,size_16,color_FFFFFF,t_70)
 
 例如请求：http://api.bilibili.com/x/web-interface/view?bvid=BV16K411J754
 
@@ -1056,7 +1056,7 @@ ffmpeg -i 下载的视频文件 -i 下载的音频文件 -c copy 合并后的视
 
 请求头需要带上原视频的链接才能获取视频数据 下面的%s就是bvid 也就是BV开头的一串字符
 
-```json
+```bash
 Referer=https://www.bilibili.com/video/%s
 ```
 
@@ -1074,7 +1074,7 @@ Referer=https://www.bilibili.com/video/%s
 
 例如windows系统，
 
-![1](C:\Users\10157\Desktop\1.jpg)
+![ffmpeg.exe](https://img-blog.csdnimg.cn/20210322024839559.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQxODEzMjA4,size_16,color_FFFFFF,t_70)
 
 
 
@@ -1094,7 +1094,7 @@ ffmpeg -i 下载的视频文件 -i 下载的音频文件 -c copy 合并后的视
 
 #### 传入aid获取
 
-```json
+```bash
 https://api.bilibili.com/x/web-interface/view/detail?aid=%s
 ```
 

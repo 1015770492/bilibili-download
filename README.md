@@ -12,5 +12,7 @@ public static void main(String[] args) {
     BiliBiliUtils.patchDownload(referUrl, "D:/");//将referUrl系列的所有视频存到D:/ 保存的路径
 }
 ```
-暂时没有友好的提示，等待程序执行完成结束即可下载完毕
+如果遇到http 412错误，说明服务器判断出这是一个爬虫程序，那么恭喜你，浏览器的B站视频也不能播放了！
 
+#### 详细API文档说明
+![api文档](./doc/bilibili-Api文档.md)

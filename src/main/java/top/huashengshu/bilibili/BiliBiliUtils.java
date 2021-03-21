@@ -20,7 +20,7 @@ public class BiliBiliUtils {
      * @param args
      */
     public static void main(String[] args) {
-        String referUrl = "https://www.bilibili.com/video/BV1PJ411n7xZ?from=search&seid=18443550776238916771";//测试用的url
+        String referUrl = "https://www.bilibili.com/video/BV1Tv411i7yj/?p=6&spm_id_from=pageDriver";//测试用的url
         BiliBiliUtils.patchDownload(referUrl, "D:/");//将referUrl系列的所有视频存到D:/盘
 
     }
@@ -59,7 +59,7 @@ public class BiliBiliUtils {
         }
         List<JSONObject> playUrlList = BiliBiliHttpUtils.getPlayUrlList(cidsJSON);//封装cid和视频标题，以及获取播放地址
         String finalDriveName = driveName;
-        playUrlList.parallelStream().forEach(playUrlObj -> {
+        playUrlList.forEach(playUrlObj -> {
             String directName = playUrlObj.getString("directName");//视频标题--》文件名前缀
             String videoName = playUrlObj.getString("videoName");//视频标题--》文件名前缀
 

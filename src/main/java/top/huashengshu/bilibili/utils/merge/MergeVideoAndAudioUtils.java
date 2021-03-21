@@ -18,7 +18,7 @@ public class MergeVideoAndAudioUtils {
                 .append(" -i \"").append(videoPath)
                 .append("\" -i \"").append(audioPath)
                 .append("\" -c copy \"").append(savePath).append("\"")
-                .toString();//合并音视频文件得命令
+                .toString();//合并音视频文件的命令
 
 
         CompletableFuture<Process> processFuture = CompletableFuture.supplyAsync(() -> {
