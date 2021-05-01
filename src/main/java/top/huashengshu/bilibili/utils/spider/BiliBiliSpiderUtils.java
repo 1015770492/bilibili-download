@@ -9,8 +9,6 @@ public class BiliBiliSpiderUtils {
 
 //        HttpResponse<String> send = BiliBiliHttpUtils.client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 //        System.out.println(send.body());
-
-
 //        Document html = Jsoup.parse(htmlStr);
 //        Elements ul = html.getElementsByClass("list-box");
 //        ul.get(0).getElementsByTag("li").parallelStream().forEach(a -> {

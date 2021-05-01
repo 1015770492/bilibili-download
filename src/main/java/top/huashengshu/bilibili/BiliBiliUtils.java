@@ -11,7 +11,13 @@ import java.util.concurrent.*;
 
 public class BiliBiliUtils {
 
-    private static ExecutorService executorService = Executors.newFixedThreadPool(3);//创建5个线程，太大了容易被封ip
+    /**
+     * 没有必要自定义线程池因为这只是一个小工具
+     * 第一个线程池是用于下载资源的
+     * 第二个线程池用于合并音频和视频文件为一个可播放的mp4文件
+     */
+    private static ExecutorService executorService = Executors.newFixedThreadPool(4);//适当的调整，建议5个以内，太大了容易被封ip
+    private static ExecutorService executorService2 = Executors.newFixedThreadPool(3);// 合并音视频文件，有限文件合并比较慢可以多建几个
 
 
     /**
@@ -20,8 +26,8 @@ public class BiliBiliUtils {
      * @param args
      */
     public static void main(String[] args) {
-        String referUrl = "https://www.bilibili.com/video/BV1Tv411i7yj/?p=6&spm_id_from=pageDriver";//测试用的url
-        BiliBiliUtils.patchDownload(referUrl, "D:/");//将referUrl系列的所有视频存到D:/盘
+        String referUrl = "https://www.bilibili.com/video/BV12b411K7Zu?p=202";//测试用的url
+        BiliBiliUtils.patchDownload(referUrl, "F:/");//将referUrl系列的所有视频存到D:/盘
 
     }
 
@@ -95,7 +101,7 @@ public class BiliBiliUtils {
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                    },executorService);
+                    },executorService2);
                 }
             });
 
